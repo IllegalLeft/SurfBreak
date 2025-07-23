@@ -1,0 +1,8 @@
+[header]
+header.bin
+
+[objects]
+src/main.o
+
+[footer]
+sprite.chr
