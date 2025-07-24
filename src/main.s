@@ -1,48 +1,12 @@
 .INCLUDE "nes.i"
 .INCLUDE "rommap.i"
-
-
-.STRUCT plyr
-	x		db
-	y		db
-	velx	db
-	vely	db
-.ENDST
-
-.ENUM $0000
-	sleeping			db		; nonzero if sleeping
-	joypadState			db
-	joypadStateOld  	db
-	player INSTANCEOF 	plyr
-.ENDE
-
-.STRUCT OAMentry
-	y		db
-	tile	db
-	attr	db
-	x		db
-.ENDST
-
-.DEFINE OAMbuffer	$0200 EXPORT
-.ENUM $0200
-	OAM INSTANCEOF OAMentry 64
-.ENDE
-
-
-.DEFINE joy_right		1 << 0
-.DEFINE joy_left		1 << 1
-.DEFINE joy_down		1 << 2
-.DEFINE joy_up			1 << 3
-.DEFINE joy_start		1 << 4
-.DEFINE joy_select		1 << 5
-.DEFINE joy_b			1 << 6
-.DEFINE joy_a			1 << 7
-
+.INCLUDE "ram.i"
 
 
 .BANK 0 SLOT 0
-.ORG $0000
-RESET:
+.ORGA $C000
+.SECTION "Main"
+Reset:
 	sei					; disable IRQs
 	cld					; disable decimal mode
 	ldx #$40
@@ -75,11 +39,6 @@ RESET:
 
 	jsr LoadPalette
 
-	lda #$00			; setup sprite DMA
-	sta OAMADDR
-	lda #$02
-	sta OAMDMA			; $0200-02ff for sprite OAM
-
 	; setup sprite
 	lda #$20
 	sta player.x
@@ -106,38 +65,17 @@ GameLoop:
 
 
 ; Subroutines
-WaitVBlank:
-	inc sleeping
--	lda sleeping
-	bne -
-	rts
-
-LoadPalette:
-	lda PPUSTATUS
-	lda #$3F
-	sta PPUADDR
-	lda #$00
-	sta PPUADDR
-
-	ldx #$00
--   lda Palette.w, x
-	sta PPUDATA
-	inx
-	cpx #$20
-	bne -
-	rts
-
 ReadJoypad:
 	lda joypadState
 	sta joypadStateOld		; save old state
 	lda #1
 	sta joypadState
-	sta $4016
+	sta JOY1
 	lda #0
-	sta $4016
+	sta JOY1
 	lsr a
-	sta $4016
--	lda $4016
+	sta JOY1
+-	lda JOY1
 	lsr a
 	rol joypadState
 	bcc -
@@ -145,100 +83,18 @@ ReadJoypad:
 	
 HandleJoypad:
 	lda joypadState
-	and #joy_up
+	and #JOY_UP
 	beq +
 	; if up
 	dec player.y
 
 +	lda joypadState
-	and #joy_down
+	and #JOY_DOWN
 	beq +
 	; if down
 	inc player.y
 +	rts
 
-InitPlayerSprite:
-	; set tile IDs
-	lda #0
-	sta OAM.1.tile
-	lda #1
-	sta OAM.2.tile
-	lda #2
-	sta OAM.3.tile
-	lda #3
-	sta OAM.4.tile
-	
-	; set attributes
-	lda #%00000000
-	sta OAM.1.attr
-	sta OAM.2.attr
-	sta OAM.3.attr
-	sta OAM.4.attr
-	
-UpdatePlayerPos:
-	clc
-	; set y ordinate
-	lda player.y
-	sta OAM.1.y
-	sta OAM.3.y
-	adc #7
-	sta OAM.2.y
-	sta OAM.4.y
-	
-	clc
-	; set x ordinate
-	lda player.x
-	sta OAM.1.x
-	sta OAM.2.x
-	adc #8
-	sta OAM.3.x
-	sta OAM.4.x
-	rts
-
-NMI:
-	; back-up registers
-	pha
-	txa
-	pha
-	tya
-	pha
-	
-	lda #$00			; setup sprite DMA
-	sta OAMADDR
-	lda #$02
-	sta OAMDMA			; $0200-02ff for sprite OAM
-	
-	lda #0				; reset sleeping status
-	sta sleeping
-	
-	; retrieve registers
-	pla
-	tay
-	pla
-	tax
-	pla
-	rti
-
-
-.SECTION "Graphics"
-
-Palette:
-.DB $00, $00, $00, $00
-.DB $0f, $00, $00, $00
-.DB $0f, $00, $00, $00
-.DB $0f, $00, $00, $00
-.DB $0f, $29, $36, $15
-.DB $0f, $00, $00, $00
-.DB $0f, $00, $00, $00
-.DB $0f, $00, $00, $00
-
 .ENDS
-
-
-; Interrupt Vectors
-.ORGA $FFFA
-.DW NMI
-.DW RESET
-.DW 0		; not used
 
 ;vim: filetype=wla

@@ -3,6 +3,8 @@ header.bin
 
 [objects]
 src/main.o
+src/graphics.o
+src/interrupts.o
 
 [footer]
 sprite.chr

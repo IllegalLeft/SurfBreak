@@ -5,3 +5,6 @@
 
 # Backups
 *.swp
+
+# Editor
+.vscode
