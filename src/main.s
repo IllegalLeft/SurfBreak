@@ -42,8 +42,10 @@ Reset:
 	; setup sprite
 	lda #$20
 	sta player.x
-	lda #(SCR_H/2 - 8)
+	lda #$00			; centering player y ($70 is center so store $0700)
 	sta player.y
+	lda #$07
+	sta player.y+1
 	lda #$00
 	sta player.velx
 	sta player.vely
@@ -59,7 +61,11 @@ Reset:
 GameLoop:
 	jsr ReadJoypad
 	jsr HandleJoypad
+
+	jsr LimitPlayerVel
+	jsr ApplyPlayerVel
 	jsr UpdatePlayerPos
+
 	jsr WaitVBlank
 	jmp GameLoop
 
@@ -86,14 +92,55 @@ HandleJoypad:
 	and #JOY_UP
 	beq +
 	; if up
-	dec player.y
+	dec player.vely
 
 +	lda joypadState
 	and #JOY_DOWN
 	beq +
 	; if down
-	inc player.y
+	inc player.vely
 +	rts
+
+.DEFINE MAX_VEL_Y	50
+LimitPlayerVel:
+	lda player.vely
+	bmi @negativevel
+	; velocity is positive
+	cmp #MAX_VEL_Y
+	bcc ++					; it's below the limit
+	; limit velocity to max
+	lda #MAX_VEL_Y
+	jmp +
+
+	; velocity is negative
+@negativevel:
+	cmp #-MAX_VEL_Y
+	bcs ++					; it's below the limit
+	lda #-MAX_VEL_Y
++	sta player.vely
+++	rts
+
+ApplyPlayerVel:
+	lda player.vely
+	bmi @negativevel		; check if the velocity is negative
+	clc
+	adc player.y
+	sta player.y
+	lda #0
+	adc player.y+1
+	sta player.y+1
+	rts
+@negativevel:
+	sec						; convert to absolute magnitude (remove negative)
+	eor #$FF
+	sta scratch
+	lda player.y
+	sbc scratch
+	sta player.y
+	lda player.y+1
+	sbc #0
+	sta player.y+1
+	rts
 
 .ENDS
 

@@ -1,10 +1,10 @@
 ; RAM Variables
 
 .STRUCT plyr
-	x		db
-	y		db
-	velx	db
-	vely	db
+	x		dw		; fixed 12.4
+	y		dw		; fixed 12.4
+	velx	db		; signed, fixed 4.4
+	vely	db		; signed, fixed 4.4
 .ENDST
 
 
@@ -14,6 +14,7 @@
 	joypadState			db
 	joypadStateOld  	db
 	player INSTANCEOF 	plyr
+	scratch				ds 5	; scratchpad
 .ENDE
 
 .DEFINE JOY_RIGHT		1 << 0

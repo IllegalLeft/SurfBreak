@@ -45,20 +45,29 @@ InitPlayerSprite:
 	sta OAM.4.attr
 	
 UpdatePlayerPos:
-	clc
-	; set y ordinate
 	lda player.y
+	sta scratch
+	lda player.y+1
+	sta scratch+1
+.REPEAT 4
+	lsr scratch+1
+	ror scratch
+.ENDR
+	lda scratch
+
+	; set y ordinate
 	sta OAM.1.y
 	sta OAM.3.y
+	clc
 	adc #7
 	sta OAM.2.y
 	sta OAM.4.y
 	
-	clc
 	; set x ordinate
 	lda player.x
 	sta OAM.1.x
 	sta OAM.2.x
+	clc
 	adc #8
 	sta OAM.3.x
 	sta OAM.4.x
