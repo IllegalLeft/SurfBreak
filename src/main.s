@@ -49,6 +49,8 @@ Reset:
 	lda #$00
 	sta player.velx
 	sta player.vely
+	lda #$03
+	sta player.accel
 	jsr InitPlayerSprite
 
 	lda #%10000000
@@ -92,13 +94,19 @@ HandleJoypad:
 	and #JOY_UP
 	beq +
 	; if up
-	dec player.vely
+	lda player.vely
+	sec
+	sbc player.accel
+	sta player.vely
 
 +	lda joypadState
 	and #JOY_DOWN
 	beq +
 	; if down
-	inc player.vely
+	lda player.vely
+	clc
+	adc player.accel
+	sta player.vely
 +	rts
 
 .DEFINE MAX_VEL_Y	50
