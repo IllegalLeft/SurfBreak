@@ -38,6 +38,7 @@ Reset:
 	bpl -
 
 	jsr LoadPalette
+	jsr LoadScreen
 
 	; setup sprite
 	lda #$20
@@ -49,15 +50,19 @@ Reset:
 	lda #$00
 	sta player.velx
 	sta player.vely
-	lda #$03
+	lda #$02
 	sta player.accel
 	jsr InitPlayerSprite
 
-	lda #%10000000
+	lda #%10001000
 	sta PPUCTRL			; enable nmi, sprites from table 0
 
-	lda #%00010000
+	lda #%00011110
 	sta PPUMASK			; no intensify, enable sprites
+
+	lda #0				; reset nametable scroll to 0, 0
+	sta PPUSCROLL
+	sta PPUSCROLL
 
 
 GameLoop:
