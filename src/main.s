@@ -37,6 +37,16 @@ Reset:
 -	bit PPUSTATUS		; wait for vblank
 	bpl -
 
+	; hide all sprites
+	lda #$ff			; hidden y ordinate
+	ldx #0
+-	sta OAMbuffer, x
+	inx
+	inx
+	inx
+	inx
+	bne -
+
 	jsr LoadPalette
 	jsr LoadScreen
 
