@@ -79,9 +79,31 @@ GameLoop:
 	jsr ReadJoypad
 	jsr HandleJoypad
 
+	; make player subject to gravity if...
+	lda OAM.1.y
+	cmp #$30					; ...above top of wave OR...
+	bcs +
+	inc player.vely
+	inc player.vely
+	jmp ++
++	lda player.y+1
+	and #$F0					; ...off the top of the screen
+	beq ++
+	inc player.vely
+	inc player.vely
+++
+
 	jsr LimitPlayerVel
 	jsr ApplyPlayerVel
 	jsr UpdatePlayerPos
+
+	; reset if beach is hit
+	lda OAM.1.y
+	cmp #$B8
+	bcc +
+	jsr WaitVBlank
+	jmp Reset
++
 
 	jsr WaitVBlank
 	jmp GameLoop
@@ -105,24 +127,35 @@ ReadJoypad:
 	rts
 	
 HandleJoypad:
+	; check if player is in air
+	lda OAM.1.y
+	cmp #$30
+	bcc @handledjoy
+	; check for looping top and bottom
+	lda player.y+1
+	and #$F0						; highest nibble of MSB should be empty
+	bne @handledjoy
+
 	lda joypadState
 	and #JOY_UP
-	beq +
+	beq @checkjoydown
 	; if up
 	lda player.vely
 	sec
 	sbc player.accel
 	sta player.vely
 
-+	lda joypadState
+@checkjoydown:
+	lda joypadState
 	and #JOY_DOWN
-	beq +
+	beq @handledjoy
 	; if down
 	lda player.vely
 	clc
 	adc player.accel
 	sta player.vely
-+	rts
+@handledjoy:
+	rts
 
 .DEFINE MAX_VEL_Y	50
 LimitPlayerVel:
@@ -166,5 +199,3 @@ ApplyPlayerVel:
 	rts
 
 .ENDS
-
-;vim: filetype=wla
