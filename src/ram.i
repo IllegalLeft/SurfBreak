@@ -14,6 +14,9 @@
 	sleeping			db		; nonzero if sleeping
 	joypadState			db
 	joypadStateOld  	db
+	cloudsx				db
+	cloudscounter		db
+	mapx				db
 	player INSTANCEOF 	plyr
 	scratch				ds 8	; scratchpad
 .ENDE

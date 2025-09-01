@@ -62,20 +62,20 @@ mvfwd:
 InitPlayerSprite:
 	; set tile IDs
 	lda #0
-	sta OAM.1.tile
+	sta OAM.5.tile
 	lda #1
-	sta OAM.2.tile
+	sta OAM.6.tile
 	lda #2
-	sta OAM.3.tile
+	sta OAM.7.tile
 	lda #3
-	sta OAM.4.tile
+	sta OAM.8.tile
 	
 	; set attributes
 	lda #%00000000
-	sta OAM.1.attr
-	sta OAM.2.attr
-	sta OAM.3.attr
-	sta OAM.4.attr
+	sta OAM.5.attr
+	sta OAM.6.attr
+	sta OAM.7.attr
+	sta OAM.8.attr
 	
 UpdatePlayerPos:
 	lda player.y
@@ -89,21 +89,21 @@ UpdatePlayerPos:
 	lda scratch
 
 	; set y ordinate
-	sta OAM.1.y
-	sta OAM.3.y
+	sta OAM.5.y
+	sta OAM.7.y
 	clc
 	adc #7
-	sta OAM.2.y
-	sta OAM.4.y
+	sta OAM.6.y
+	sta OAM.8.y
 	
 	; set x ordinate
 	lda player.x
-	sta OAM.1.x
-	sta OAM.2.x
+	sta OAM.5.x
+	sta OAM.6.x
 	clc
 	adc #8
-	sta OAM.3.x
-	sta OAM.4.x
+	sta OAM.7.x
+	sta OAM.8.x
 	rts
 
 .ENDS

@@ -3,6 +3,8 @@
 .INCLUDE "ram.i"
 
 
+.DEFINE CLOUDCOUNT	$24
+
 .BANK 0 SLOT 0
 .ORGA $C000
 .SECTION "Main"
@@ -50,7 +52,7 @@ Reset:
 	jsr LoadPalette
 	jsr LoadScreen
 
-	; setup sprite
+	; setup player sprite
 	lda #$20
 	sta player.x
 	lda #$00			; centering player y ($70 is center so store $0700)
@@ -64,6 +66,16 @@ Reset:
 	sta player.accel
 	jsr InitPlayerSprite
 
+	; init zero sprite
+	lda #$2F
+	sta OAM.1.y
+	lda #$03
+	sta OAM.1.tile
+	lda #$20
+	sta OAM.1.attr
+	lda #$10
+	sta OAM.1.x
+
 	lda #%10001000
 	sta PPUCTRL			; enable nmi, sprites from table 0
 
@@ -71,16 +83,28 @@ Reset:
 	sta PPUMASK			; no intensify, enable sprites
 
 	lda #0				; reset nametable scroll to 0, 0
+	sta cloudsx
+	sta mapx
 	sta PPUSCROLL
 	sta PPUSCROLL
+	lda #CLOUDCOUNT
+	sta cloudscounter
 
 
 GameLoop:
 	jsr ReadJoypad
 	jsr HandleJoypad
+	
+	; move clouds
+	bit PPUSTATUS
+	lda cloudsx
+	sta PPUSCROLL
+	lda #0
+	sta PPUSCROLL
+	
 
 	; make player subject to gravity if...
-	lda OAM.1.y
+	lda OAM.5.y
 	cmp #$30					; ...above top of wave OR...
 	bcs +
 	inc player.vely
@@ -98,13 +122,14 @@ GameLoop:
 	jsr UpdatePlayerPos
 
 	; reset if beach is hit
-	lda OAM.1.y
+	lda OAM.5.y
 	cmp #$B8
 	bcc +
 	jsr WaitVBlank
 	jmp Reset
 +
-
+	
+	jsr WaitZeroSprHit
 	jsr WaitVBlank
 	jmp GameLoop
 
@@ -128,7 +153,7 @@ ReadJoypad:
 	
 HandleJoypad:
 	; check if player is in air
-	lda OAM.1.y
+	lda OAM.5.y
 	cmp #$30
 	bcc @handledjoy
 	; check for looping top and bottom
@@ -196,6 +221,22 @@ ApplyPlayerVel:
 	lda player.y+1
 	sbc #0
 	sta player.y+1
+	rts
+
+WaitZeroSprHit:
+-	bit PPUSTATUS			; wait until it isn't set (start of frame?)
+	bvs -
+-	bit PPUSTATUS
+	bvc -
+	dec cloudscounter
+	bne +
+	inc cloudsx
+	lda #CLOUDCOUNT
+	sta cloudscounter
++	lda mapx
+	sta PPUSCROLL
+	lda #0
+	sta PPUSCROLL
 	rts
 
 .ENDS
