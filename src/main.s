@@ -66,6 +66,9 @@ Reset:
 	sta player.accel
 	jsr InitPlayerSprite
 
+	; test enemy
+	jsr SpawnEnemy
+
 	; init zero sprite
 	lda #$2F
 	sta OAM.1.y
@@ -120,6 +123,11 @@ GameLoop:
 	jsr LimitPlayerVel
 	jsr ApplyPlayerVel
 	jsr UpdatePlayerPos
+
+	lda #$20					; OAM buff dest offset
+	sta scratch+2
+	ldx #0						; enemy index
+	jsr DrawEnemy
 
 	; reset if beach is hit
 	lda OAM.5.y

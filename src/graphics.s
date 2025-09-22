@@ -106,6 +106,83 @@ UpdatePlayerPos:
 	sta OAM.8.x
 	rts
 
+; 	y - enemy index (source)
+SpawnEnemy:
+	; change state
+	lda #1
+	sta EnemyState, y
+	; set x
+	lda #80
+	sta EnemyX, y
+	; set y
+	sta EnemyY, y
+	; set tiles addr
+	tya
+	asl
+	tay
+	lda #<SprShark
+	sta EnemyTiles, y
+	lda #>SprShark
+	sta EnemyTiles+1, y
+	rts
+
+; 	x - enemy index (source)
+; scratch 2	- OAM buffer destination offset
+DrawEnemy:
+	lda EnemyState, x
+	beq @end	; enemy isn't in a state we need to draw it (0)
+
+	ldy scratch+2
+
+	; y ordinate
+	lda EnemyY, x
+	sta OAM.1.y, y
+	sta OAM.3.y, y
+	clc
+	adc #8
+	sta OAM.2.y, y
+	sta OAM.4.y, y
+
+	; x ordinate
+	lda EnemyX, x
+	sta OAM.1.x, y
+	sta OAM.2.x, y
+	clc
+	adc #8
+	sta OAM.3.x, y
+	sta OAM.4.x, y
+
+	; set tile indices
+	lda EnemyTiles, x	; load address into scratch
+	sta scratch
+	lda EnemyTiles+1, x
+	sta scratch+1
+	ldy #0
+	ldx scratch+2
+	lda (scratch), y	; load from address
+	sta OAM.1.tile, x
+	iny
+	lda (scratch), y
+	sta OAM.2.tile, x
+	iny
+	lda (scratch), y
+	sta OAM.3.tile, x
+	iny
+	lda (scratch), y
+	sta OAM.4.tile, x
+	ldy scratch+2
+
+	; attributes
+	lda #%00000001
+	sta OAM.1.attr, y
+	sta OAM.2.attr, y
+	sta OAM.3.attr, y
+	sta OAM.4.attr, y
+
+@end:
+	rts
+
+
 .ENDS
     
 

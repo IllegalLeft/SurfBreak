@@ -9,8 +9,9 @@
 .ENDST
 
 
-; Zero Page
+; Zero Page ($0000 - $00FF)
 .ENUM $0000
+	scratch				ds 8	; scratch pad
 	sleeping			db		; nonzero if sleeping
 	joypadState			db
 	joypadStateOld  	db
@@ -18,7 +19,6 @@
 	cloudscounter		db
 	mapx				db
 	player INSTANCEOF 	plyr
-	scratch				ds 8	; scratchpad
 .ENDE
 
 .DEFINE JOY_RIGHT		1 << 0
@@ -30,7 +30,17 @@
 .DEFINE JOY_B			1 << 6
 .DEFINE JOY_A			1 << 7
 
+; Enemy Buffer ($0100 - $01FF)
+.DEFINE ENEMY_COUNT		10
+.ENUM $0100
+	EnemyState 			ds ENEMY_COUNT
+	EnemyTiles			ds 2*ENEMY_COUNT
+	EnemyX				ds ENEMY_COUNT
+	EnemyY				ds ENEMY_COUNT
+.ENDE
 
+
+; OAM Buffer ($0200 - $02FF)
 .STRUCT OAMentry
 	y		db
 	tile	db
