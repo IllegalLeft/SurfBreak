@@ -1,7 +1,9 @@
 ; Graphics Routines
+
 .INCLUDE "nes.i"
 .INCLUDE "rommap.i"
 .INCLUDE "ram.i"
+
 
 .SECTION "Graphics Routines"
 
@@ -28,7 +30,7 @@ LoadPalette:
 
 LoadScreen:
 .define src		scratch
-	lda #<Map					; setup map src
+	lda #<Map				; setup map src
 	sta src
 	lda #>Map
 	sta src+1
@@ -108,29 +110,25 @@ UpdatePlayerPos:
 
 ; 	y - enemy index (source)
 SpawnEnemy:
-	; change state
 	lda #1
-	sta EnemyState, y
-	; set x
+	sta EnemyState, y		; set state
 	lda #80
-	sta EnemyX, y
-	; set y
-	sta EnemyY, y
-	; set tiles addr
+	sta EnemyX, y			; set x
+	sta EnemyY, y			; set y
 	tya
 	asl
 	tay
 	lda #<SprShark
-	sta EnemyTiles, y
+	sta EnemyTiles, y		; set tiles address
 	lda #>SprShark
 	sta EnemyTiles+1, y
 	rts
 
 ; 	x - enemy index (source)
-; scratch 2	- OAM buffer destination offset
+; 	scratch 2	- OAM buffer destination offset
 DrawEnemy:
 	lda EnemyState, x
-	beq @end	; enemy isn't in a state we need to draw it (0)
+	beq @end				; if state is 0, we're done here
 
 	ldy scratch+2
 
@@ -152,14 +150,14 @@ DrawEnemy:
 	sta OAM.3.x, y
 	sta OAM.4.x, y
 
-	; set tile indices
-	lda EnemyTiles, x	; load address into scratch
+	; tile indices
+	lda EnemyTiles, x		; load address into scratch
 	sta scratch
 	lda EnemyTiles+1, x
 	sta scratch+1
 	ldy #0
 	ldx scratch+2
-	lda (scratch), y	; load from address
+	lda (scratch), y		; load from address
 	sta OAM.1.tile, x
 	iny
 	lda (scratch), y

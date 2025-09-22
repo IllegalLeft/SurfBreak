@@ -9,21 +9,21 @@
 .ORGA $C000
 .SECTION "Main"
 Reset:
-	sei					; disable IRQs
-	cld					; disable decimal mode
+	sei						; disable IRQs
+	cld						; disable decimal mode
 	ldx #$40
-	stx APUFRAMECNTR	; disable APU frame IRQ
+	stx APUFRAMECNTR		; disable APU frame IRQ
 	ldx #$FF
-	txs					; set stack up
-	inx					; zero x
-	stx PPUCTRL			; disable NMI
-	stx PPUMASK			; disable rendering
-	stx APUSTATUS		; disable DMC IRQs
+	txs						; set stack up
+	inx						; zero x
+	stx PPUCTRL				; disable NMI
+	stx PPUMASK				; disable rendering
+	stx APUSTATUS			; disable DMC IRQs
 
--	bit PPUSTATUS		; wait for vblank
+-	bit PPUSTATUS			; wait for vblank
 	bpl -
 
--	lda #$00			; clear mem
+-	lda #$00				; clear mem
 	sta $0000, x
 	sta $0100, x
 	sta $0200, x
@@ -36,11 +36,11 @@ Reset:
 	inx
 	bne -
 
--	bit PPUSTATUS		; wait for vblank
+-	bit PPUSTATUS			; wait for vblank
 	bpl -
 
 	; hide all sprites
-	lda #$ff			; hidden y ordinate
+	lda #$ff				; hidden y ordinate
 	ldx #0
 -	sta OAMbuffer, x
 	inx
@@ -55,7 +55,7 @@ Reset:
 	; setup player sprite
 	lda #$20
 	sta player.x
-	lda #$00			; centering player y ($70 is center so store $0700)
+	lda #$00				; centering player y ($70 is center so store $0700)
 	sta player.y
 	lda #$07
 	sta player.y+1
@@ -66,8 +66,7 @@ Reset:
 	sta player.accel
 	jsr InitPlayerSprite
 
-	; test enemy
-	jsr SpawnEnemy
+	jsr SpawnEnemy			; test enemy
 
 	; init zero sprite
 	lda #$2F
@@ -80,12 +79,12 @@ Reset:
 	sta OAM.1.x
 
 	lda #%10001000
-	sta PPUCTRL			; enable nmi, sprites from table 0
+	sta PPUCTRL				; enable nmi, sprites from table 0
 
 	lda #%00011110
-	sta PPUMASK			; no intensify, enable sprites
+	sta PPUMASK				; no intensify, enable sprites
 
-	lda #0				; reset nametable scroll to 0, 0
+	lda #0					; reset nametable scroll to 0, 0
 	sta cloudsx
 	sta mapx
 	sta PPUSCROLL
@@ -108,13 +107,13 @@ GameLoop:
 
 	; make player subject to gravity if...
 	lda OAM.5.y
-	cmp #$30					; ...above top of wave OR...
+	cmp #$30				; ...above top of wave OR...
 	bcs +
 	inc player.vely
 	inc player.vely
 	jmp ++
 +	lda player.y+1
-	and #$F0					; ...off the top of the screen
+	and #$F0				; ...off the top of the screen
 	beq ++
 	inc player.vely
 	inc player.vely
@@ -124,14 +123,13 @@ GameLoop:
 	jsr ApplyPlayerVel
 	jsr UpdatePlayerPos
 
-	lda #$20					; OAM buff dest offset
+	lda #$20				; OAM buff dest offset
 	sta scratch+2
-	ldx #0						; enemy index
+	ldx #0					; enemy index
 	jsr DrawEnemy
 
-	; reset if beach is hit
 	lda OAM.5.y
-	cmp #$B8
+	cmp #$B8				; check if low enough to hit beach
 	bcc +
 	jsr WaitVBlank
 	jmp Reset
@@ -166,7 +164,7 @@ HandleJoypad:
 	bcc @handledjoy
 	; check for looping top and bottom
 	lda player.y+1
-	and #$F0						; highest nibble of MSB should be empty
+	and #$F0				; highest nibble of MSB should be empty
 	bne @handledjoy
 
 	lda joypadState
@@ -197,15 +195,13 @@ LimitPlayerVel:
 	; velocity is positive
 	cmp #MAX_VEL_Y
 	bcc ++					; it's below the limit
-	; limit velocity to max
-	lda #MAX_VEL_Y
+	lda #MAX_VEL_Y			; set velocity to max
 	jmp +
 
-	; velocity is negative
 @negativevel:
 	cmp #-MAX_VEL_Y
 	bcs ++					; it's below the limit
-	lda #-MAX_VEL_Y
+	lda #-MAX_VEL_Y			; set velocity to min.
 +	sta player.vely
 ++	rts
 

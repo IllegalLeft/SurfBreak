@@ -6,23 +6,21 @@
 
 .BANK 0 SLOT 0
 NMIHandler:
-	; back-up registers
-	pha
+	pha						; back-up registers
 	txa
 	pha
 	tya
 	pha
 	
-	lda #$00			; setup sprite DMA
+	lda #$00				; setup sprite DMA
 	sta OAMADDR
 	lda #>OAM
-	sta OAMDMA			; $0200-02ff for sprite OAM
+	sta OAMDMA				; $0200-02ff for sprite OAM
 	
-	lda #0				; reset sleeping status
+	lda #0					; reset sleeping status
 	sta sleeping
 	
-	; retrieve registers
-	pla
+	pla						; retrieve registers
 	tay
 	pla
 	tax
@@ -34,4 +32,4 @@ NMIHandler:
 .ORGA $FFFA
 .DW NMIHandler
 .DW Reset
-.DW 0		; not used
+.DW 0						; not used
