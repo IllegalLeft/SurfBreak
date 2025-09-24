@@ -78,8 +78,8 @@ Reset:
 	lda #$10
 	sta OAM.1.x
 
-	lda #%10001000
-	sta PPUCTRL				; enable nmi, sprites from table 0
+	lda #%10100000
+	sta PPUCTRL				; enable nmi, 8x16 sprites
 
 	lda #%00011110
 	sta PPUMASK				; no intensify, enable sprites

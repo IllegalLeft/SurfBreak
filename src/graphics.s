@@ -63,21 +63,21 @@ mvfwd:
 
 InitPlayerSprite:
 	; set tile IDs
-	lda #0
-	sta OAM.5.tile
 	lda #1
-	sta OAM.6.tile
-	lda #2
-	sta OAM.7.tile
+	sta OAM.5.tile
 	lda #3
-	sta OAM.8.tile
+	sta OAM.6.tile
+	;lda #2
+	;sta OAM.7.tile
+	;lda #3
+	;sta OAM.8.tile
 	
 	; set attributes
 	lda #%00000000
 	sta OAM.5.attr
 	sta OAM.6.attr
-	sta OAM.7.attr
-	sta OAM.8.attr
+	;sta OAM.7.attr
+	;sta OAM.8.attr
 	
 UpdatePlayerPos:
 	lda player.y
@@ -92,20 +92,14 @@ UpdatePlayerPos:
 
 	; set y ordinate
 	sta OAM.5.y
-	sta OAM.7.y
-	clc
-	adc #7
 	sta OAM.6.y
-	sta OAM.8.y
 	
 	; set x ordinate
 	lda player.x
 	sta OAM.5.x
-	sta OAM.6.x
 	clc
 	adc #8
-	sta OAM.7.x
-	sta OAM.8.x
+	sta OAM.6.x
 	rts
 
 ; 	y - enemy index (source)
@@ -135,20 +129,14 @@ DrawEnemy:
 	; y ordinate
 	lda EnemyY, x
 	sta OAM.1.y, y
-	sta OAM.3.y, y
-	clc
-	adc #8
 	sta OAM.2.y, y
-	sta OAM.4.y, y
 
 	; x ordinate
 	lda EnemyX, x
 	sta OAM.1.x, y
-	sta OAM.2.x, y
 	clc
 	adc #8
-	sta OAM.3.x, y
-	sta OAM.4.x, y
+	sta OAM.2.x, y
 
 	; tile indices
 	lda EnemyTiles, x		; load address into scratch
@@ -162,20 +150,12 @@ DrawEnemy:
 	iny
 	lda (scratch), y
 	sta OAM.2.tile, x
-	iny
-	lda (scratch), y
-	sta OAM.3.tile, x
-	iny
-	lda (scratch), y
-	sta OAM.4.tile, x
 	ldy scratch+2
 
 	; attributes
 	lda #%00000001
 	sta OAM.1.attr, y
 	sta OAM.2.attr, y
-	sta OAM.3.attr, y
-	sta OAM.4.attr, y
 
 @end:
 	rts
@@ -199,9 +179,9 @@ Palettes:
 
 ; Sprites
 SprPlayer:
-	.db $00, $01, $02, $03
+	.db $01, $03
 SprShark:
-	.db $04, $05, $06, $07
+	.db $05, $07
 	
 
 ; Maps
