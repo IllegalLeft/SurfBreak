@@ -52,19 +52,7 @@ Reset:
 	jsr LoadPalette
 	jsr LoadScreen
 
-	; setup player sprite
-	lda #$20
-	sta player.x
-	lda #$00				; centering player y ($70 is center so store $0700)
-	sta player.y
-	lda #$07
-	sta player.y+1
-	lda #$00
-	sta player.velx
-	sta player.vely
-	lda #$02
-	sta player.accel
-	jsr InitPlayerSprite
+	jsr SetupPlayer
 
 	jsr SpawnEnemy			; test enemy
 
@@ -81,30 +69,19 @@ Reset:
 	lda #%10100000
 	sta PPUCTRL				; enable nmi, 8x16 sprites
 
+	jsr WaitVBlank
 	lda #%00011110
 	sta PPUMASK				; no intensify, enable sprites
 
 	lda #0					; reset nametable scroll to 0, 0
-	sta cloudsx
-	sta mapx
 	sta PPUSCROLL
 	sta PPUSCROLL
-	lda #CLOUDCOUNT
-	sta cloudscounter
 
 
 GameLoop:
 	jsr ReadJoypad
 	jsr HandleJoypad
 	
-	; move clouds
-	bit PPUSTATUS
-	lda cloudsx
-	sta PPUSCROLL
-	lda #0
-	sta PPUSCROLL
-	
-
 	; make player subject to gravity if...
 	lda OAM.5.y
 	cmp #$30				; ...above top of wave OR...
@@ -132,11 +109,14 @@ GameLoop:
 	cmp #$B8				; check if low enough to hit beach
 	bcc +
 	jsr WaitVBlank
-	jmp Reset
+	jmp GameOver
 +
-	
-	jsr WaitZeroSprHit
 	jsr WaitVBlank
+	jmp GameLoop
+
+GameOver:
+	; to be run when player hits something
+	jsr SetupPlayer			; reset player's pos
 	jmp GameLoop
 
 
@@ -188,6 +168,22 @@ HandleJoypad:
 @handledjoy:
 	rts
 
+SetupPlayer:
+	; setup player sprite
+	lda #$20
+	sta player.x
+	lda #$00				; centering player y ($70 is center so store $0700)
+	sta player.y
+	lda #$07
+	sta player.y+1
+	lda #$00
+	sta player.velx
+	sta player.vely
+	lda #$02
+	sta player.accel
+	jsr InitPlayerSprite
+	rts
+
 .DEFINE MAX_VEL_Y	50
 LimitPlayerVel:
 	lda player.vely
@@ -225,22 +221,6 @@ ApplyPlayerVel:
 	lda player.y+1
 	sbc #0
 	sta player.y+1
-	rts
-
-WaitZeroSprHit:
--	bit PPUSTATUS			; wait until it isn't set (start of frame?)
-	bvs -
--	bit PPUSTATUS
-	bvc -
-	dec cloudscounter
-	bne +
-	inc cloudsx
-	lda #CLOUDCOUNT
-	sta cloudscounter
-+	lda mapx
-	sta PPUSCROLL
-	lda #0
-	sta PPUSCROLL
 	rts
 
 .ENDS
