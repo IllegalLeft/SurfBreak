@@ -19,12 +19,13 @@ all: default
 
 $(TARGET): $(OFILES)
 	$(LD) $(LDFLAGS) $(LINKFILE) $@
+	python sym2mlb.py SurfBreak.sym
 
 %.o: %.s
 	$(AS) $(ASFLAGS) -I $(INCLUDES) -o $@ $<
-
 
 clean:
 	-rm -f $(TARGET)
 	-rm -f $(SOURCES)/*.o
 	-rm -f *.sym
+	-rm -f *.mlb

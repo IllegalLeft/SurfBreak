@@ -1,6 +1,7 @@
 # Compiled files
 *.o
 *.sym
+*.mlb
 *.nes
 
 # Backups
